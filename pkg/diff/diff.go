@@ -702,16 +702,24 @@ func (d *differ) loadLayer(ctx context.Context, node *EventTreeNode, inputIdx in
 			hdr.Format = tar.FormatUnknown
 		}
 		if d.o.CanonicalPaths {
-			hdr.Name = strings.TrimPrefix(hdr.Name, "/")
+			if hdr.Name != "/" {
+				hdr.Name = strings.TrimPrefix(hdr.Name, "/")
+			}
 			hdr.Name = strings.TrimPrefix(hdr.Name, "./")
-			hdr.Linkname = strings.TrimPrefix(hdr.Linkname, "/")
+			if hdr.Linkname != "/" {
+				hdr.Linkname = strings.TrimPrefix(hdr.Linkname, "/")
+			}
 			hdr.Linkname = strings.TrimPrefix(hdr.Linkname, "./")
 			if path, ok := hdr.PAXRecords["path"]; ok {
-				path = strings.TrimPrefix(path, "/")
+				if path != "/" {
+					path = strings.TrimPrefix(path, "/")
+				}
 				hdr.PAXRecords["path"] = strings.TrimPrefix(path, "./")
 			}
 			if path, ok := hdr.PAXRecords["linkpath"]; ok {
-				path = strings.TrimPrefix(path, "/")
+				if path != "/" {
+					path = strings.TrimPrefix(path, "/")
+				}
 				hdr.PAXRecords["linkpath"] = strings.TrimPrefix(path, "./")
 			}
 		}
