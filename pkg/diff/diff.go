@@ -36,6 +36,9 @@ type IgnoranceOptions struct {
 	IgnoreFileOrder             bool
 	IgnoreFileModeRedundantBits bool
 	IgnoreFileTimestamps        bool
+	IgnoreFilePermissions       bool
+	IgnoreFileMode              bool
+	IgnoreLayerLengthMismatch   bool
 	IgnoreImageTimestamps       bool
 	IgnoreImageName             bool
 	IgnoreTarFormat             bool
@@ -780,7 +783,7 @@ func (d *differ) diffLayerWithTarReader(ctx context.Context, node *EventTreeNode
 		}
 	}()
 	var errs []error
-	if l0.entries != l1.entries {
+	if !d.o.IgnoreLayerLengthMismatch && l0.entries != l1.entries {
 		ev := Event{
 			Type:   EventTypeLayerBlobMismatch,
 			Inputs: in,
@@ -801,13 +804,15 @@ func (d *differ) diffLayerWithTarReader(ctx context.Context, node *EventTreeNode
 	for name, ents0 := range l0.entriesByName {
 		ents1 := l1.entriesByName[name]
 		if len(ents0) != len(ents1) {
-			ev := Event{
-				Type:   EventTypeLayerBlobMismatch,
-				Inputs: in,
-				Note:   eventNoteNameAppearanceMismatch(name, len(ents0), len(ents1)),
-			}
-			if err := d.raiseEvent(ctx, node /* not NewNode */, ev, "layer"); err != nil {
-				errs = append(errs, err)
+			if !d.o.IgnoreLayerLengthMismatch {
+				ev := Event{
+					Type:   EventTypeLayerBlobMismatch,
+					Inputs: in,
+					Note:   eventNoteNameAppearanceMismatch(name, len(ents0), len(ents1)),
+				}
+				if err := d.raiseEvent(ctx, node /* not NewNode */, ev, "layer"); err != nil {
+					errs = append(errs, err)
+				}
 			}
 			continue
 		}
@@ -821,13 +826,15 @@ func (d *differ) diffLayerWithTarReader(ctx context.Context, node *EventTreeNode
 	for name, ents1 := range l1.entriesByName {
 		ents0 := l0.entriesByName[name]
 		if len(ents0) != len(ents1) {
-			ev := Event{
-				Type:   EventTypeLayerBlobMismatch,
-				Inputs: in,
-				Note:   eventNoteNameAppearanceMismatch(name, len(ents0), len(ents1)),
-			}
-			if err := d.raiseEvent(ctx, node /* not newNode */, ev, "layer"); err != nil {
-				errs = append(errs, err)
+			if !d.o.IgnoreLayerLengthMismatch {
+				ev := Event{
+					Type:   EventTypeLayerBlobMismatch,
+					Inputs: in,
+					Note:   eventNoteNameAppearanceMismatch(name, len(ents0), len(ents1)),
+				}
+				if err := d.raiseEvent(ctx, node /* not newNode */, ev, "layer"); err != nil {
+					errs = append(errs, err)
+				}
 			}
 		}
 	}
@@ -886,6 +893,12 @@ func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]Ev
 	discardFunc := func(k, _ string) bool {
 		_, ok := negligiblePAXFields[k]
 		return ok
+	}
+	if d.o.IgnoreFileMode {
+		negligibleTarFields = append(negligibleTarFields, "Mode")
+	}
+	if d.o.IgnoreFilePermissions {
+		negligibleTarFields = append(negligibleTarFields, "Uid", "Gid")
 	}
 	cmpOpts := []cmp.Option{cmpopts.IgnoreUnexported(TarEntry{}), cmpopts.IgnoreFields(tar.Header{}, negligibleTarFields...)}
 	paxOpts := []cmp.Option{cmpopts.IgnoreMapEntries(discardFunc)}
