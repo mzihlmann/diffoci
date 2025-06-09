@@ -885,7 +885,7 @@ func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]Ev
 	if d.o.IgnoreFilePermissions {
 		negligibleTarFields = append(negligibleTarFields, "Uid", "Gid")
 	}
-	cmpOpts := []cmp.Option{cmpopts.IgnoreUnexported(TarEntry{}), cmpopts.IgnoreFields(tar.Header{}, negligibleTarFields...)}
+	cmpOpts := []cmp.Option{cmpopts.IgnoreUnexported(TarEntry{}), cmpopts.IgnoreFields(TarEntry{}, "Digest"), cmpopts.IgnoreFields(tar.Header{}, negligibleTarFields...)}
 	ent0, ent1 := *in[0].TarEntry, *in[1].TarEntry
 	if d.o.IgnoreFileOrder {
 		// cmpopts.IgnoreFields cannot be used for int
