@@ -44,9 +44,6 @@ func NewCommand() *cobra.Command {
 					"ignore-file-order",
 					"ignore-file-mode-redundant-bits",
 					"ignore-file-timestamps",
-					"ignore-file-permissions",
-					"ignore-file-mode",
-					"ignore-layer-length-mismatch",
 					"ignore-image-name",
 					"ignore-tar-format",
 					"treat-canonical-paths-equal",
@@ -72,9 +69,9 @@ func NewCommand() *cobra.Command {
 	flags.Bool("ignore-file-order", false, "Ignore file order in tar layers")
 	flags.Bool("ignore-file-mode-redundant-bits", false, "Ignore redundant bits of file mode")
 	flags.Bool("ignore-file-timestamps", false, "Ignore timestamps on files")
-	flags.Bool("ignore-file-permissions", false, "Ignore permissions on files")
-	flags.Bool("ignore-file-mode", false, "Ignore file mode")
-	flags.Bool("ignore-layer-length-mismatch", false, "Ignore if different number of files are touched in the layers")
+	flags.Bool("extra-ignore-file-permissions", false, "Ignore permissions on files")
+	flags.Bool("extra-ignore-file-mode", false, "Ignore file mode")
+	flags.Bool("extra-ignore-layer-length-mismatch", false, "Ignore if different number of files are touched in the layers")
 	flags.Bool("ignore-image-name", false, "Ignore image name annotation")
 	flags.Bool("ignore-tar-format", false, "Ignore tar format")
 	flags.Bool("treat-canonical-paths-equal", false, "Treat leading `./` `/` `` in file paths as canonical")
@@ -123,15 +120,15 @@ func action(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	options.IgnoreFilePermissions, err = flags.GetBool("ignore-file-permissions")
+	options.IgnoreFilePermissions, err = flags.GetBool("extra-ignore-file-permissions")
 	if err != nil {
 		return err
 	}
-	options.IgnoreFileMode, err = flags.GetBool("ignore-file-mode")
+	options.IgnoreFileMode, err = flags.GetBool("extra-ignore-file-mode")
 	if err != nil {
 		return err
 	}
-	options.IgnoreLayerLengthMismatch, err = flags.GetBool("ignore-layer-length-mismatch")
+	options.IgnoreLayerLengthMismatch, err = flags.GetBool("extra-ignore-layer-length-mismatch")
 	if err != nil {
 		return err
 	}
