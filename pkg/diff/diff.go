@@ -38,6 +38,7 @@ type IgnoranceOptions struct {
 	IgnoreFileTimestamps        bool
 	IgnoreFilePermissions       bool
 	IgnoreFileMode              bool
+	IgnoreFileContent           bool
 	IgnoreLayerLengthMismatch   bool
 	IgnoreImageTimestamps       bool
 	IgnoreImageName             bool
@@ -919,7 +920,11 @@ func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]Ev
 	if d.o.IgnoreFilePermissions {
 		negligibleTarFields = append(negligibleTarFields, "Uid", "Gid")
 	}
-	cmpOpts := []cmp.Option{cmpopts.IgnoreUnexported(TarEntry{}), cmpopts.IgnoreFields(tar.Header{}, negligibleTarFields...)}
+	var negligibleTarFields2 []string
+	if d.o.IgnoreFileContent {
+		negligibleTarFields2 = append(negligibleTarFields2, "Digest")
+	}
+	cmpOpts := []cmp.Option{cmpopts.IgnoreUnexported(TarEntry{}), cmpopts.IgnoreFields(TarEntry{}, negligibleTarFields2...), cmpopts.IgnoreFields(tar.Header{}, negligibleTarFields...)}
 	paxOpts := []cmp.Option{cmpopts.IgnoreMapEntries(discardFunc)}
 	ent0, ent1 := *in[0].TarEntry, *in[1].TarEntry
 	ignore := contains(d.o.IgnoreFiles, ent0.Header.Name) || contains(d.o.IgnoreFiles, ent1.Header.Name)
