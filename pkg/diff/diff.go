@@ -566,7 +566,7 @@ func (d *differ) diffConfig(ctx context.Context, node *EventTreeNode, in [2]Even
 	if d.o.IgnoreHistory {
 		negligibleFields = append(negligibleFields, "History")
 	}
-	negligibleFields = append(negligibleFields, "Config")
+	negligibleFields = append(negligibleFields, "Config", "Author", "Platform")
 	var errs []error
 	if diff := cmp.Diff(*in[0].Config, *in[1].Config, cmpopts.IgnoreFields(ocispec.Image{}, negligibleFields...)); diff != "" {
 		ev := Event{
