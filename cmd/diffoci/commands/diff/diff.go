@@ -71,6 +71,7 @@ func NewCommand() *cobra.Command {
 	flags.Bool("ignore-file-timestamps", false, "Ignore timestamps on files")
 	flags.Bool("extra-ignore-file-permissions", false, "Ignore permissions on files")
 	flags.Bool("extra-ignore-file-mode", false, "Ignore file mode")
+	flags.Bool("extra-ignore-file-content", false, "Ignore the contents of files and compare their size only")
 	flags.Bool("extra-ignore-layer-length-mismatch", false, "Ignore if different number of files are touched in the layers")
 	flags.Bool("ignore-image-name", false, "Ignore image name annotation")
 	flags.Bool("ignore-tar-format", false, "Ignore tar format")
@@ -125,6 +126,10 @@ func action(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	options.IgnoreFileMode, err = flags.GetBool("extra-ignore-file-mode")
+	if err != nil {
+		return err
+	}
+	options.IgnoreFileContent, err = flags.GetBool("extra-ignore-file-content")
 	if err != nil {
 		return err
 	}
