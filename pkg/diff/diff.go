@@ -48,6 +48,7 @@ type IgnoranceOptions struct {
 type Options struct {
 	IgnoranceOptions
 	IgnorePaths []string
+	IgnoreFiles []string
 	EventHandler
 	ReportFile string
 	ReportDir  string
@@ -55,7 +56,7 @@ type Options struct {
 }
 
 func (o *Options) digestMayChange() bool {
-	return o.IgnoranceOptions != IgnoranceOptions{} || len(o.IgnorePaths) > 0
+	return o.IgnoranceOptions != IgnoranceOptions{} || len(o.IgnorePaths) > 0 || len(o.IgnoreFiles) > 0
 }
 
 func (o *Options) sizeMayChange() bool {
@@ -908,6 +909,15 @@ func (d *differ) diffTarEntries(ctx context.Context, node *EventTreeNode, in [2]
 	return dirsToBeRemovedIfEmpty, errors.Join(errs...)
 }
 
+func contains(list []string, value string) bool {
+	for _, v := range list {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
+
 func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]EventInput) (dirsToBeRemovedIfEmpty []string, retErr error) {
 	var negligibleTarFields []string
 	negligiblePAXFields := map[string]struct{}{}
@@ -930,6 +940,7 @@ func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]Ev
 	cmpOpts := []cmp.Option{cmpopts.IgnoreUnexported(TarEntry{}), cmpopts.IgnoreFields(tar.Header{}, negligibleTarFields...)}
 	paxOpts := []cmp.Option{cmpopts.IgnoreMapEntries(discardFunc)}
 	ent0, ent1 := *in[0].TarEntry, *in[1].TarEntry
+	ignore := contains(d.o.IgnoreFiles, ent0.Header.Name) || contains(d.o.IgnoreFiles, ent1.Header.Name)
 	if d.o.IgnoreFileOrder {
 		// cmpopts.IgnoreFields cannot be used for int
 		ent0.Index = -1
@@ -950,7 +961,7 @@ func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]Ev
 		pax1 = map[string]string{}
 	}
 	var errs []error
-	if diff := cmp.Diff(ent0, ent1, cmpOpts...); diff != "" {
+	if diff := cmp.Diff(ent0, ent1, cmpOpts...); diff != "" && !ignore {
 		ev := Event{
 			Type:   EventTypeTarEntryMismatch,
 			Inputs: in,
@@ -960,7 +971,7 @@ func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]Ev
 		if err := d.raiseEvent(ctx, node, ev, "tarentry"); err != nil {
 			errs = append(errs, err)
 		}
-	} else if diff := cmp.Diff(pax0, pax1, paxOpts...); diff != "" {
+	} else if diff := cmp.Diff(pax0, pax1, paxOpts...); diff != "" && !ignore {
 		ev := Event{
 			Type:   EventTypeTarEntryMismatch,
 			Inputs: in,
