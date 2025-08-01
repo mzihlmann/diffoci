@@ -35,7 +35,9 @@ type IgnoranceOptions struct {
 	IgnoreHistory               bool
 	IgnoreFileOrder             bool
 	IgnoreFileModeRedundantBits bool
-	IgnoreFileTimestamps        bool
+	IgnoreFileMTime             bool
+	IgnoreFileATime             bool
+	IgnoreFileCTime             bool
 	IgnoreFilePermissions       bool
 	IgnoreFileMode              bool
 	IgnoreFileContent           bool
@@ -904,10 +906,19 @@ func contains(list []string, value string) bool {
 func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]EventInput) (dirsToBeRemovedIfEmpty []string, retErr error) {
 	var negligibleTarFields []string
 	negligiblePAXFields := map[string]struct{}{}
-	if d.o.IgnoreFileTimestamps {
-		negligibleTarFields = append(negligibleTarFields, "ModTime", "AccessTime", "ChangeTime", "PAXRecords")
+	if d.o.IgnoreFileMTime || d.o.IgnoreFileATime || d.o.IgnoreFileCTime {
+		negligibleTarFields = append(negligibleTarFields, "PAXRecords")
+	}
+	if d.o.IgnoreFileMTime {
+		negligibleTarFields = append(negligibleTarFields, "ModTime")
 		negligiblePAXFields["mtime"] = struct{}{}
+	}
+	if d.o.IgnoreFileATime {
+		negligibleTarFields = append(negligibleTarFields, "AccessTime")
 		negligiblePAXFields["atime"] = struct{}{}
+	}
+	if d.o.IgnoreFileCTime {
+		negligibleTarFields = append(negligibleTarFields, "ChangeTime")
 		negligiblePAXFields["ctime"] = struct{}{}
 	}
 	discardFunc := func(k, _ string) bool {

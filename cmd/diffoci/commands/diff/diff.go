@@ -42,7 +42,9 @@ func NewCommand() *cobra.Command {
 					"ignore-history",
 					"ignore-file-order",
 					"ignore-file-mode-redundant-bits",
-					"ignore-file-timestamps",
+					"ignore-file-mtime",
+					"ignore-file-atime",
+					"ignore-file-ctime",
 					"ignore-image-timestamps",
 					"ignore-image-name",
 					"ignore-tar-format",
@@ -56,8 +58,22 @@ func NewCommand() *cobra.Command {
 			}
 			if ignoreTimestamps, _ := cmd.Flags().GetBool("ignore-timestamps"); ignoreTimestamps {
 				flagNames := []string{
-					"ignore-file-timestamps",
+					"ignore-file-mtime",
+					"ignore-file-atime",
+					"ignore-file-ctime",
 					"ignore-image-timestamps",
+				}
+				for _, f := range flagNames {
+					if err := flags.Set(f, "true"); err != nil {
+						return err
+					}
+				}
+			}
+			if ignoreTimestamps, _ := cmd.Flags().GetBool("ignore-file-timestamps"); ignoreTimestamps {
+				flagNames := []string{
+					"ignore-file-mtime",
+					"ignore-file-atime",
+					"ignore-file-ctime",
 				}
 				for _, f := range flagNames {
 					if err := flags.Set(f, "true"); err != nil {
@@ -78,7 +94,10 @@ func NewCommand() *cobra.Command {
 	flags.Bool("ignore-history", false, "Ignore history")
 	flags.Bool("ignore-file-order", false, "Ignore file order in tar layers")
 	flags.Bool("ignore-file-mode-redundant-bits", false, "Ignore redundant bits of file mode")
-	flags.Bool("ignore-file-timestamps", false, "Ignore timestamps on files")
+	flags.Bool("ignore-file-timestamps", false, "Ignore timestamps on files - Alias for --ignore-file-*time=true")
+	flags.Bool("ignore-file-mtime", false, "Ignore mtime timestamps on files")
+	flags.Bool("ignore-file-atime", false, "Ignore atime timestamps on files")
+	flags.Bool("ignore-file-ctime", false, "Ignore ctime timestamps on files")
 	flags.Bool("extra-ignore-file-permissions", false, "Ignore permissions on files")
 	flags.Bool("extra-ignore-file-mode", false, "Ignore file mode")
 	flags.Bool("extra-ignore-file-content", false, "Ignore the contents of files and compare their size only")
@@ -125,7 +144,15 @@ func action(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	options.IgnoreFileTimestamps, err = flags.GetBool("ignore-file-timestamps")
+	options.IgnoreFileMTime, err = flags.GetBool("ignore-file-mtime")
+	if err != nil {
+		return err
+	}
+	options.IgnoreFileATime, err = flags.GetBool("ignore-file-atime")
+	if err != nil {
+		return err
+	}
+	options.IgnoreFileCTime, err = flags.GetBool("ignore-file-ctime")
 	if err != nil {
 		return err
 	}
