@@ -61,6 +61,7 @@ func NewCommand() *cobra.Command {
 					"ignore-file-mtime",
 					"ignore-file-atime",
 					"ignore-file-ctime",
+					"ignore-file-meta-format",
 					"ignore-image-timestamps",
 				}
 				for _, f := range flagNames {
@@ -74,6 +75,7 @@ func NewCommand() *cobra.Command {
 					"ignore-file-mtime",
 					"ignore-file-atime",
 					"ignore-file-ctime",
+					"ignore-file-meta-format",
 				}
 				for _, f := range flagNames {
 					if err := flags.Set(f, "true"); err != nil {
@@ -98,6 +100,7 @@ func NewCommand() *cobra.Command {
 	flags.Bool("ignore-file-mtime", false, "Ignore mtime timestamps on files")
 	flags.Bool("ignore-file-atime", false, "Ignore atime timestamps on files")
 	flags.Bool("ignore-file-ctime", false, "Ignore ctime timestamps on files")
+	flags.Bool("ignore-file-meta-format", false, "Ignore whether PAX or USTAR is used")
 	flags.Bool("extra-ignore-file-permissions", false, "Ignore permissions on files")
 	flags.Bool("extra-ignore-file-mode", false, "Ignore file mode")
 	flags.Bool("extra-ignore-file-content", false, "Ignore the contents of files and compare their size only")
@@ -153,6 +156,10 @@ func action(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	options.IgnoreFileCTime, err = flags.GetBool("ignore-file-ctime")
+	if err != nil {
+		return err
+	}
+	options.IgnoreFileMetaFormat, err = flags.GetBool("ignore-file-meta-format")
 	if err != nil {
 		return err
 	}

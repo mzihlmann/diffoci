@@ -38,6 +38,7 @@ type IgnoranceOptions struct {
 	IgnoreFileMTime             bool
 	IgnoreFileATime             bool
 	IgnoreFileCTime             bool
+	IgnoreFileMetaFormat        bool
 	IgnoreFilePermissions       bool
 	IgnoreFileMode              bool
 	IgnoreFileContent           bool
@@ -905,9 +906,14 @@ func contains(list []string, value string) bool {
 
 func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]EventInput) (dirsToBeRemovedIfEmpty []string, retErr error) {
 	var negligibleTarFields []string
+	var negligibleTarFields2 []string
 	negligiblePAXFields := map[string]struct{}{}
 	if d.o.IgnoreFileMTime || d.o.IgnoreFileATime || d.o.IgnoreFileCTime {
 		negligibleTarFields = append(negligibleTarFields, "PAXRecords")
+	}
+	if d.o.IgnoreFileMetaFormat {
+		negligibleTarFields = append(negligibleTarFields, "Format")
+		negligibleTarFields2 = append(negligibleTarFields2, "Index")
 	}
 	if d.o.IgnoreFileMTime {
 		negligibleTarFields = append(negligibleTarFields, "ModTime")
@@ -931,7 +937,6 @@ func (d *differ) diffTarEntry(ctx context.Context, node *EventTreeNode, in [2]Ev
 	if d.o.IgnoreFilePermissions {
 		negligibleTarFields = append(negligibleTarFields, "Uid", "Gid")
 	}
-	var negligibleTarFields2 []string
 	if d.o.IgnoreFileContent {
 		negligibleTarFields2 = append(negligibleTarFields2, "Digest")
 	}
