@@ -32,6 +32,12 @@ File    usr/lib/ossl-modules/legacy.so       5b677eca0c3a3ac53c1a49fbac49534ea28
 ### Binary
 Binaries are available for Linux and macOS: https://github.com/reproducible-containers/diffoci/releases
 
+### Using mise
+If you are an enthusiast user of [mise](https://github.com/jdx/mise), the polyglot tool versions manager you can install diffoci with a command like:
+```bash
+mise use -g diffoci@latest
+```
+
 ### Source
 Needs Go 1.21 or later.
 ```bash
@@ -45,8 +51,9 @@ diffoci diff IMAGE0 IMAGE1
 ```
 
 > [!TIP]
-> Non-Linux users typically have to specify `--platform` explicitly.
+> Non-Linux users and those comparing multi-platform images from Docker typically have to specify `--platform` explicitly.
 > e.g., `diffoci diff --platform=linux/amd64 IMAGE0 IMAGE1`.
+> (Note: Platform filtering for `docker://` images requires Docker v28+)
 
 The strict mode is often too strict.
 Consider using the non-strict mode (see below).
