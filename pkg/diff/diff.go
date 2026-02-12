@@ -29,6 +29,7 @@ import (
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/reproducible-containers/diffoci/pkg/untar"
+	"github.com/sirupsen/logrus"
 )
 
 type IgnoranceOptions struct {
@@ -546,6 +547,8 @@ func (d *differ) diffManifest(ctx context.Context, node *EventTreeNode, in [2]Ev
 		in[0].Manifest.Annotations,
 		in[1].Manifest.Annotations,
 	}, "Annotations"); err != nil {
+		logrus.Warnf("in[0]: %v", in[0].Manifest.Annotations)
+		logrus.Warnf("in[1]: %v", in[1].Manifest.Annotations)
 		errs = append(errs, err)
 	}
 
