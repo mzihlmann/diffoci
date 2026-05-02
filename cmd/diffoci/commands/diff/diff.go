@@ -108,6 +108,7 @@ func NewCommand() *cobra.Command {
 	flags.StringSlice("extra-ignore-files", []string{}, "Ignore all diffs on specific files")
 	flags.Bool("ignore-image-timestamps", false, "Ignore timestamps in image metadata")
 	flags.Bool("ignore-image-name", false, "Ignore image name annotation")
+	flags.Bool("extra-ignore-annotations", false, "Ignore all image annotations")
 	flags.Bool("ignore-tar-format", false, "Ignore tar format")
 	flags.Bool("treat-canonical-paths-equal", false, "Treat leading `./` `/` `` in file paths as canonical")
 	flags.Bool("semantic", false, "[Recommended] Alias for --ignore-*=true --treat-canonical-paths-equal")
@@ -188,6 +189,10 @@ func action(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	options.IgnoreImageName, err = flags.GetBool("ignore-image-name")
+	if err != nil {
+		return err
+	}
+	options.IgnoreAnnotations, err = flags.GetBool("extra-ignore-annotations")
 	if err != nil {
 		return err
 	}

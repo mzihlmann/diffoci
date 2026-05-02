@@ -45,6 +45,7 @@ type IgnoranceOptions struct {
 	IgnoreLayerLengthMismatch   bool
 	IgnoreImageTimestamps       bool
 	IgnoreImageName             bool
+	IgnoreAnnotations           bool
 	IgnoreTarFormat             bool
 	CanonicalPaths              bool
 }
@@ -400,7 +401,7 @@ func (d *differ) diffAnnotationsField(ctx context.Context, node *EventTreeNode, 
 	}
 	discardFunc := func(k, _ string) bool {
 		_, ok := negligible[k]
-		return ok || (d.o.IgnoreImageName && strings.HasPrefix(k, distributionSourcePrefix))
+		return ok || d.o.IgnoreAnnotations || (d.o.IgnoreImageName && strings.HasPrefix(k, distributionSourcePrefix))
 	}
 	if diff := cmp.Diff(maps[0], maps[1], cmpopts.IgnoreMapEntries(discardFunc)); diff != "" {
 		ev := Event{
@@ -739,7 +740,8 @@ func (d *differ) loadLayer(ctx context.Context, node *EventTreeNode, inputIdx in
 				}
 			}
 			for k := range hdr.PAXRecords {
-				if strings.HasPrefix(k, "SCHILY.xattr.security.") {
+				if strings.HasPrefix(k, "SCHILY.xattr.security.") ||
+					strings.HasPrefix(k, "SCHILY.xattr.user.overlay.") {
 					log.G(ctx).Debugf("Ignoring PAX record %q", k)
 					delete(hdr.PAXRecords, k)
 				}
